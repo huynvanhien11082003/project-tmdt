@@ -1,0 +1,11 @@
+- type: web
+    name: backend-techstore
+    runtime: docker
+    dockerfilePath: Backend/demotmdt/demotmdt/Dockerfile
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://mysql-2e0669e4-huynhvanhien12222-cb3d.f.aivencloud.com:16880/defaultdb?useSSL=true&sslMode=REQUIRED
+      - key: SPRING_DATASOURCE_USERNAME
+        value: avnadmin
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: avnadmin
