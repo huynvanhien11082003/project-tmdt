@@ -1,0 +1,61 @@
+services:
+  db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306" 
+    environment:
+      MYSQL_DATABASE: techstore
+      MYSQL_ROOT_PASSWORD: admin123
+    # 1. THÊM ĐOẠN HEALTHCHECK NÀY VÀO DƯỚI DB
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-padmin123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./Backend/demotmdt/demotmdt
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/techstore?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=admin123
+    # 2. SỬA ĐIỀU KIỆN DEPENDS_ON THÀNH SERVICE_HEALTHY
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 3. Frontend Next.js
+  frontend:
+    build: 
+      context: ./Frontend/techstore-frontend # Nếu folder chứa Dockerfile FE là techstore-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+    depends_on:
+      - backend
+
+  # 4. N8N (Đã tích hợp vào đây)
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n-techstore
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:

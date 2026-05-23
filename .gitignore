@@ -1,0 +1,13 @@
+# Thư mục build
+node_modules
+.next
+target
+.idea
+.vscode
+
+# File bảo mật
+.env
+.env.local
+
+# Thư mục Docker
+*.log
