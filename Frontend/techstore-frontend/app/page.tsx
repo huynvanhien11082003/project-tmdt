@@ -4,7 +4,7 @@ import Link from 'next/link';
 async function getProducts() {
   try {
     // Dùng 'http://backend:8080' là địa chỉ duy nhất container có thể gọi được
-    const res = await fetch('http://backend:8080/api/products', { cache: 'no-store' });
+    const res = await fetch('https://project-tmdt.onrender.com/api/products', { cache: 'no-store' });
     if (!res.ok) return [];
     return res.json();
   } catch (error) {
