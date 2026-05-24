@@ -1,18 +1,17 @@
-"use client"; // Bắt buộc phải có dòng này ở đầu file cho các component có tương tác
+"use client";
 
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown'; // Thêm thư viện này
 
-// Nhận sku từ trang cha (page.tsx) truyền xuống
 export default function ProductFAQ({ sku }: { sku: string }) {
   const [loading, setLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
 
   const handleAskAI = async () => {
     setLoading(true);
-    setAiResponse(null); // Reset lại câu trả lời cũ (nếu có)
+    setAiResponse(null);
 
     try {
-      // Gọi API Backend Spring Boot (Nhớ đổi URL này khi deploy lên Render)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
       
       const response = await fetch(`${apiUrl}/api/products/ask-ai`, {
@@ -20,14 +19,13 @@ export default function ProductFAQ({ sku }: { sku: string }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ sku: sku }), // Gửi mã SKU sang cho Backend
+        body: JSON.stringify({ sku: sku }),
       });
 
       if (!response.ok) {
         throw new Error("Lỗi khi gọi Backend");
       }
 
-      // Nhận kết quả từ Backend (do n8n trả về)
       const data = await response.text(); 
       setAiResponse(data);
 
@@ -40,27 +38,43 @@ export default function ProductFAQ({ sku }: { sku: string }) {
   };
 
   return (
-    <div className="mt-8 p-6 border rounded-lg bg-gray-50 shadow-sm">
-      <h3 className="text-xl font-bold mb-4">Hỏi đáp với Chuyên gia AI</h3>
+    <div className="mt-8 p-6 border rounded-xl bg-gray-50 shadow-sm">
+      <h3 className="text-xl font-bold mb-4 text-gray-900">Hỏi đáp với Chuyên gia AI</h3>
       
-      <p className="text-gray-600 mb-4">
+      <p className="text-gray-600 mb-6">
         Bạn có thắc mắc về sản phẩm này? Hãy để AI của Techstore phân tích thông số và tư vấn cho bạn.
       </p>
 
       <button 
         onClick={handleAskAI} 
         disabled={loading}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+        className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors shadow-sm"
       >
         {loading ? "AI Đang suy nghĩ..." : "Tư vấn sản phẩm này"}
       </button>
 
-      {/* Vùng hiển thị câu trả lời của AI */}
+      {/* Vùng hiển thị câu trả lời đã được Render Markdown */}
       {aiResponse && (
-        <div className="mt-6 p-4 bg-white border border-blue-200 rounded-md shadow-inner">
-          <h4 className="font-semibold text-blue-800 mb-2">AI Trả lời:</h4>
-          {/* whitespace-pre-wrap giúp hiển thị đúng dấu xuống dòng của AI */}
-          <p className="text-gray-700 whitespace-pre-wrap">{aiResponse}</p>
+        <div className="mt-6 p-6 bg-white border border-blue-100 rounded-lg shadow-inner">
+          <h4 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
+            <span>✨</span> AI Tư vấn:
+          </h4>
+          
+          <div className="text-gray-700 leading-relaxed">
+            <ReactMarkdown
+              components={{
+                // Cấu hình custom CSS cho từng thẻ HTML sinh ra từ Markdown
+                h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-6 mb-3 text-gray-900" {...props} />,
+                p: ({node, ...props}) => <p className="mb-4" {...props} />,
+                strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
+                ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
+                li: ({node, ...props}) => <li className="" {...props} />,
+                hr: ({node, ...props}) => <hr className="my-6 border-gray-200" {...props} />,
+              }}
+            >
+              {aiResponse}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </div>
