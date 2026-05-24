@@ -1,16 +1,30 @@
+export const dynamic = 'force-dynamic'; // CHÌA KHÓA ĐỂ SỬA LỖI BUILD DOCKER
+
 import React from 'react';
 import Link from 'next/link'; 
 
 async function getProducts() {
   try {
-    // Dùng 'http://backend:8080' là địa chỉ duy nhất container có thể gọi được
-    const res = await fetch('https://project-tmdt.onrender.com/api/products', { cache: 'no-store' });
-    if (!res.ok) return [];
+    // Ưu tiên dùng biến môi trường, nếu chạy Docker Local thì tự fallback về backend:8080
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://backend:8080';
+    
+    console.log("Đang fetch danh sách sản phẩm từ:", `${API_URL}/api/products`);
+    
+    const res = await fetch(`${API_URL}/api/products`, { 
+      cache: 'no-store' 
+    });
+    
+    if (!res.ok) {
+      console.error("Backend trả về lỗi:", res.status);
+      return [];
+    }
     return res.json();
   } catch (error) {
+    console.error("Lỗi mất kết nối Backend:", error);
     return [];
   }
 }
+
 export default async function HomePage() {
   const products = await getProducts();
 
@@ -39,7 +53,7 @@ export default async function HomePage() {
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <span className="text-gray-400">No Image</span>
+                    <span className="text-gray-400">Không có hình ảnh</span>
                   )}
                 </div>
 
@@ -49,7 +63,7 @@ export default async function HomePage() {
                   
                   <div className="mt-auto pt-4">
                     <p className="text-xl font-extrabold text-red-600">
-                      {product.price.toLocaleString('vi-VN')} VNĐ
+                      {product.price?.toLocaleString('vi-VN')} VNĐ
                     </p>
                   </div>
                 </div>

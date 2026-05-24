@@ -28,7 +28,7 @@ public class ProductController {
     }
     @PostMapping("/ask-ai")
     public String askAI(@RequestBody AskAIRequest request) {
-        String n8nUrl = "https://n8n-của-bạn.render.com/webhook/ai-consultation";
+        String n8nUrl = "http://localhost:5678/webhook-test/ai-consultation";
         RestTemplate restTemplate = new RestTemplate();
 
         // Gửi SKU sang n8n và nhận phản hồi từ AI
