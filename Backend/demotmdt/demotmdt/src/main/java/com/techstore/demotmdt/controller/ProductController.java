@@ -4,6 +4,7 @@ import com.techstore.demotmdt.dto.ProductDTO;
 import com.techstore.demotmdt.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -24,5 +25,23 @@ public class ProductController {
     @GetMapping
     public List<ProductDTO> getAllProducts() {
         return productService.getAllProducts();
+    }
+    @PostMapping("/ask-ai")
+    public String askAI(@RequestBody AskAIRequest request) {
+        String n8nUrl = "https://n8n-của-bạn.render.com/webhook/ai-consultation";
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Gửi SKU sang n8n và nhận phản hồi từ AI
+        String aiResponse = restTemplate.postForObject(n8nUrl, request, String.class);
+
+        return aiResponse;
+    }
+
+    // Tạo một class DTO đơn giản để nhận request từ frontend
+    public static class AskAIRequest {
+        private String sku;
+        // getter, setter
+        public String getSku() { return sku; }
+        public void setSku(String sku) { this.sku = sku; }
     }
 }
